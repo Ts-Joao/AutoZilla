@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  name        String?
+  password    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  vehicles    Vehicle[]
+  profilePic  Photo? @relation("ProfilePic")
+}
+
+enum FuelType {
+  GASOLINE
+  DIESEL
+  ELECTRIC
+  HYBRID
+}
+
+enum VehicleCondition {
+  NEW
+  USED
+  SEMI_NEW
+}
+
+enum VehicleColor {
+  RED
+  BLUE
+  GREEN
+  BLACK
+  WHITE
+  SILVER
+  YELLOW
+  ORANGE
+  PURPLE
+  BROWN
+  GRAY
+  GOLD
+  PINK
+  BEIGE
+}
+
+enum TransmissionType {
+  MANUAL
+  AUTOMATIC
+  AUTOMATED
+  CVT
+  SINGLE_SPEED
+}
+
+enum VehicleCategory {
+  SEDAN
+  SUV
+  TRUCK
+  COUPE
+  CONVERTIBLE
+  VAN
+  WAGON
+  HATCH
+  PICKUP
+  FAMILY
+  LUXURY
+  SPORTS
+}
+
+enum VehicleFeature {
+  AIR_CONDITIONING
+  POWER_STEERING
+  ABS
+  SUNROOF
+  NAVIGATION_SYSTEM
+  BLUETOOTH
+  BACKUP_CAMERA
+  CRUISE_CONTROL
+  HEATED_SEATS
+  KEYLESS_ENTRY
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  SOLD
+  PENDING
+  RESERVED
+}
+
+model Vehicle {
+  id            String        @id @default(uuid())
+  year          Int
+  price         Decimal           @db.Decimal(10, 2)
+  brand         String
+  model         String
+  version       String
+  mileage       Int
+  sponsored     Boolean           @default(false)
+  city          String
+  state         String            @db.Char(2)
+  plateFinal    String
+  fuelType      FuelType
+  condition     VehicleCondition
+  color         VehicleColor
+  transmission  TransmissionType
+  category      VehicleCategory
+  features      VehicleFeature[]
+  status        VehicleStatus     @default(AVAILABLE)
+  inspected     Boolean           @default(false)
+  armored       Boolean           @default(false)
+  ownerId       Int
+  createdAt     DateTime          @default(now())
+
+  // Relations
+  owner     User                  @relation(fields: [ownerId], references: [id])
+  photos    Photo[]
+
+  // Indexes
+  @@index([category])
+  @@index([price])
+  @@index([city, state])
+  @@index([brand, model])
+  @@index([condition])
+  @@index([inspected])
+  @@index([year])
+  @@index([mileage])
+  @@index([fuelType])
+}
+
+model Photo {
+  id         String           @id @default(uuid())
+  url        String
+
+  // Relations
+  vehicle    Vehicle              @relation(fields: [vehicleId], references: [id])
+  vehicleId  String
+  user       User?                @relation("ProfilePic", fields: [userId], references: [id])
+  userId     Int?                 @unique
+}

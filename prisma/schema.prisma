@@ -57,21 +57,6 @@ enum TransmissionType {
   SINGLE_SPEED
 }
 
-enum VehicleCategory {
-  SEDAN
-  SUV
-  TRUCK
-  COUPE
-  CONVERTIBLE
-  VAN
-  WAGON
-  HATCH
-  PICKUP
-  FAMILY
-  LUXURY
-  SPORTS
-}
-
 enum VehicleFeature {
   AIR_CONDITIONING
   POWER_STEERING
@@ -96,7 +81,6 @@ model Vehicle {
   id            String        @id @default(uuid())
   year          Int
   price         Decimal           @db.Decimal(10, 2)
-  brand         String
   model         String
   version       String
   mileage       Int
@@ -104,12 +88,12 @@ model Vehicle {
   city          String
   state         String            @db.Char(2)
   plateFinal    String
+  brandId       Int
+  categoryId    Int
   fuelType      FuelType
   condition     VehicleCondition
   color         VehicleColor
   transmission  TransmissionType
-  category      VehicleCategory
-  features      VehicleFeature[]
   status        VehicleStatus     @default(AVAILABLE)
   inspected     Boolean           @default(false)
   armored       Boolean           @default(false)
@@ -118,13 +102,16 @@ model Vehicle {
 
   // Relations
   owner     User                  @relation(fields: [ownerId], references: [id])
+  brand     Brand                 @relation(fields: [brandId], references: [id])
   photos    Photo[]
-
+  features  VehicleFeature[]
+  category  VehicleCategory      @relation(fields: [categoryId], references: [id])
+  
   // Indexes
-  @@index([category])
+  @@index([categoryId])
   @@index([price])
   @@index([city, state])
-  @@index([brand, model])
+  @@index([brandId, model])
   @@index([condition])
   @@index([inspected])
   @@index([year])
@@ -133,12 +120,33 @@ model Vehicle {
 }
 
 model Photo {
-  id         String           @id @default(uuid())
-  url        String
+  id          String           @id @default(uuid())
+  url         String
+  vehicleId   String
+  userId      Int?                 @unique
+  cateogoryId Int?
 
   // Relations
-  vehicle    Vehicle              @relation(fields: [vehicleId], references: [id])
-  vehicleId  String
-  user       User?                @relation("ProfilePic", fields: [userId], references: [id])
-  userId     Int?                 @unique
+  vehicle     Vehicle              @relation(fields: [vehicleId], references: [id])
+  user        User?                @relation("ProfilePic", fields: [userId], references: [id])
+  vehicleCategory VehicleCategory? @relation(fields: [cateogoryId], references: [id])
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+
+  // Relations
+  vehicles  Vehicle[]
+}
+
+model VehicleCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+
+  // Relations
+  vehicles  Vehicle[]
+  photos    Photo[]
 }

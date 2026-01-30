@@ -119,17 +119,32 @@ model Vehicle {
   @@index([fuelType])
 }
 
+enum PhotoType {
+  VEHICLE
+  PROFILE
+  CATEGORY
+}
+
 model Photo {
   id          String           @id @default(uuid())
   url         String
-  vehicleId   String
+  type        PhotoType
+  vehicleId   String?
   userId      Int?                 @unique
-  cateogoryId Int?
+  categoryId  Int?
+
+  // Ordering of photos
+  isMain      Boolean              @default(false)
+  order       Int                  @default(0)
 
   // Relations
-  vehicle     Vehicle              @relation(fields: [vehicleId], references: [id])
-  user        User?                @relation("ProfilePic", fields: [userId], references: [id])
-  vehicleCategory VehicleCategory? @relation(fields: [cateogoryId], references: [id])
+  vehicle     Vehicle?              @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  user        User?                @relation("ProfilePic", fields: [userId], references: [id], onDelete: Cascade)
+  vehicleCategory VehicleCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([vehicleId])
+  @@index([categoryId])
 }
 
 model Brand {

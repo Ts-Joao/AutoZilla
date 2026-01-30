@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -81,14 +82,12 @@ model Vehicle {
   id            String        @id @default(uuid())
   year          Int
   price         Decimal           @db.Decimal(10, 2)
-  model         String
   version       String
   mileage       Int
   sponsored     Boolean           @default(false)
   city          String
   state         String            @db.Char(2)
   plateFinal    String
-  brandId       Int
   categoryId    Int
   fuelType      FuelType
   condition     VehicleCondition
@@ -99,24 +98,45 @@ model Vehicle {
   armored       Boolean           @default(false)
   ownerId       Int
   createdAt     DateTime          @default(now())
+  modelId       Int
 
   // Relations
-  owner     User                  @relation(fields: [ownerId], references: [id])
-  brand     Brand                 @relation(fields: [brandId], references: [id])
   photos    Photo[]
   features  VehicleFeature[]
-  category  VehicleCategory      @relation(fields: [categoryId], references: [id])
+  model     VehicleModel          @relation(fields: [modelId], references: [id])
+  owner     User                  @relation(fields: [ownerId], references: [id])
+  category  VehicleCategory       @relation(fields: [categoryId], references: [id])
   
   // Indexes
   @@index([categoryId])
   @@index([price])
   @@index([city, state])
-  @@index([brandId, model])
   @@index([condition])
   @@index([inspected])
   @@index([year])
   @@index([mileage])
   @@index([fuelType])
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique
+
+  // Relations
+  models    VehicleModel[]
+}
+
+model VehicleModel {
+  id          Int       @id @default(autoincrement())
+  view        Int
+  title       String
+  brandId     Int
+
+  // Relations
+  photo       Photo[]
+  vehicle     Vehicle[]
+  brand       Brand     @relation(fields: [brandId], references: [id])
 }
 
 enum PhotoType {
@@ -126,34 +146,27 @@ enum PhotoType {
 }
 
 model Photo {
-  id          String           @id @default(uuid())
-  url         String
-  type        PhotoType
-  vehicleId   String?
-  userId      Int?                 @unique
-  categoryId  Int?
+  id              String           @id @default(uuid())
+  url             String
+  type            PhotoType
+  vehicleId       String?
+  userId          Int?                 @unique
+  categoryId      Int?
+  vehicleModelId  Int?
 
   // Ordering of photos
   isMain      Boolean              @default(false)
   order       Int                  @default(0)
 
   // Relations
-  vehicle     Vehicle?              @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  user        User?                @relation("ProfilePic", fields: [userId], references: [id], onDelete: Cascade)
-  vehicleCategory VehicleCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vehicle           Vehicle?              @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  user              User?                 @relation("ProfilePic", fields: [userId], references: [id], onDelete: Cascade)
+  vehicleCategory   VehicleCategory?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  vehicleModel      VehicleModel?         @relation(fields: [vehicleModelId], references: [id], onDelete: Cascade)
 
   // Indexes
   @@index([vehicleId])
   @@index([categoryId])
-}
-
-model Brand {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  slug      String   @unique
-
-  // Relations
-  vehicles  Vehicle[]
 }
 
 model VehicleCategory {

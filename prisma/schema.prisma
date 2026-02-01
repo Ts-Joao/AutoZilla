@@ -80,6 +80,7 @@ enum VehicleStatus {
 
 model Vehicle {
   id            String        @id @default(uuid())
+  slug      String   @unique
   year          Int
   price         Decimal           @db.Decimal(10, 2)
   version       String
@@ -132,6 +133,7 @@ model VehicleModel {
   view        Int
   title       String
   brandId     Int
+  slug      String   @unique
 
   // Relations
   photo       Photo[]

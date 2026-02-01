@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/lib/prisma";
 import slugify from "slugify";
-
-interface CategoryParams {
-    id: number;
-    name: string;
-    slug: string;
-    photoUrl: string | null;
-}
+import { CategoryDto } from "@/src/dto/category.dto";
 
 export async function GET() {
-    const categories: CategoryParams[] = await prisma.category.findMany();
+    const categories: CategoryDto[] = await prisma.category.findMany();
     return NextResponse.json(categories);
 }
 
